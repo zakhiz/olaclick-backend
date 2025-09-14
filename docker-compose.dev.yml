@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: olaclick-api-dev
+    ports:
+      - '${PORT}:${PORT}'
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT}
+
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+
+      - REDIS_HOST=redis
+      - REDIS_PORT=${REDIS_PORT}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - olaclick-dev-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: olaclick-postgres-dev
+    ports:
+      - '${DB_PORT}:${DB_PORT}'
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - olaclick-dev-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: olaclick-redis-dev
+    ports:
+      - '${REDIS_PORT}:${REDIS_PORT}'
+    command: redis-server
+    networks:
+      - olaclick-dev-network
+
+volumes:
+  postgres_dev_data:
+    driver: local
+
+networks:
+  olaclick-dev-network:
+    driver: bridge
